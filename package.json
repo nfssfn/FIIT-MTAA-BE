@@ -1,0 +1,24 @@
+{
+  "name": "mtaa-server",
+  "version": "1.0.0",
+  "description": "Mafia game backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BeerWare",
+  "dependencies": {
+    "await-of": "^3.1.1",
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.2",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.17.3",
+    "image-type": "^4.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.2.8",
+    "uuid": "^8.3.2",
+    "ws": "^8.5.0"
+  }
+}
