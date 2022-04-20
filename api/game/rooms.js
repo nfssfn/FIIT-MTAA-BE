@@ -24,7 +24,7 @@ async function createRoomController(req, res) {
   if (!room)
     return res.sendStatus(400);
 
-  return res.send({ id: room.id });
+  return res.status(201).send({ id: room.id });
 }
 
 async function deleteRoomController(req, res) {

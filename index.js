@@ -25,4 +25,6 @@ app.use(useUser);
     console.log(`Server is running on port ${config.port}`);
   });
 
+  require('./misc/socket');
+
 })();

@@ -13,7 +13,7 @@ const GameHistoryModelSchema = new Schema({
   users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   statistics: [{ type: Schema.Types.ObjectId, ref: 'Statistic' }],
   logs: [{ type: Schema.Types.ObjectId, ref: 'Log' }],
-  timestamp: { type: Date, default: Date.now() }
+  timestamp: { type: Date, default: new Date() }
 });
 
 module.exports = mongoose.model('GameHistory', GameHistoryModelSchema);

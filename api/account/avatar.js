@@ -1,3 +1,4 @@
+const fs = require('fs');
 const of = require('await-of').of;
 const bodyParser = require('body-parser');
 const imageType = require('image-type');
@@ -5,17 +6,23 @@ const imageType = require('image-type');
 const UserModel = require('../../models/User');
 const useGuard = require('../../misc/useGuard');
 
+const DEFAULT_AVATAR = fs.readFileSync('./misc/defaultAvatar.png');
 
 async function getAvatar(req, res) {
-  const { username } = req.body;
+  const username = req.query.username ?? req.body?.username;
 
   const [userRes, userErr] = await of(UserModel.findOne({ username }, 'avatar').exec());
 
   if (userErr)
     return res.sendStatus(500);
 
-  if (!userRes || !userRes.avatar)
+  if (!userRes)
     return res.sendStatus(404);
+
+  if (!userRes.avatar) {
+    res.type('image/png');
+    return res.send(DEFAULT_AVATAR);
+  }
 
   const type = imageType(userRes.avatar);
   res.type(type.mime);

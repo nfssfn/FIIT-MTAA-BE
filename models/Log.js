@@ -4,12 +4,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const LogModelSchema = new Schema({
-  user: String,
-  event: {
-    type: String,
-    enum: Object.values(config.game.events)
-  },
-  timestamp: { type: Date, default: Date.now() }
+  event: String,
+  data: Object,
+  timestamp: { type: Date, default: new Date() }
 });
 
 module.exports = mongoose.model('Log', LogModelSchema);

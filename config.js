@@ -8,9 +8,6 @@ module.exports = {
       'MAFIA': 'MAF',
       'DOCTOR': 'DOC',
       'SHERIFF': 'SRF'
-    },
-    events: {
-      'ANY': 'ANY'
     }
   }
 }

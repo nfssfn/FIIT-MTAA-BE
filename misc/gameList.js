@@ -1,36 +1,7 @@
-// const WebSocketServer = require('ws').Server;
-const { v4: uuidv4 } = require('uuid');
-
+const GameRoom = require('./Game');
 const list = [];
-// const ws = new WebSocketServer({ port: 8341 })
-
-class GameRoom {
-
-  admin;
-  players = [];
-  maxPlayers = 13;
-  id = uuidv4();
-  isPrivate = false;
 
 
-  constructor({ admin, maxPlayers, isPrivate }) {
-    this.admin = admin;
-    this.isPrivate = isPrivate;
-
-    if (maxPlayers)
-      this.maxPlayers = maxPlayers;
-
-    list.push(this);
-  }
-
-
-  destroy() {
-    list.splice(list.indexOf(this), 1);
-    this.players = [];
-    this.admin = null;
-  }
-
-}
 
 module.exports = {
   createRoom(...args) {
@@ -44,7 +15,10 @@ module.exports = {
     if (isPlaying)
       return false;
 
-    return new GameRoom(...args);
+    const newGame = new GameRoom(...args);
+    newGame.onStart = () => list.splice(list.indexOf(newGame), 1);
+    list.push(newGame);
+    return newGame;
   },
 
   getRooms() {
@@ -57,6 +31,7 @@ module.exports = {
     if (!room)
       return false;
 
+    list.splice(list.indexOf(room), 1);
     room.destroy();
     return true;
   }
