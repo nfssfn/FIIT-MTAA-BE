@@ -27,7 +27,7 @@ class GameRoom {
 
   admin;
   players = [];
-  maxPlayers = 6;
+  maxPlayers = 4;
 
   logs = [];
 
@@ -55,13 +55,8 @@ class GameRoom {
           socket.join(`${this.uuidv4}-lobby`);
           this.notifyLobbyList();
           socket.emit('lobby-info', {
-            isAdmin: this.admin._id === tokenData._id,
+            isAdmin: this.admin?._id === tokenData._id,
             isPrivate: this.isPrivate
-          });
-
-
-          socket.on('rtc-transmit', ({ to, ...data }) => {
-            this.players.filter(ps => to.includes(ps.username) && ps.username !== tokenData.username).forEach(ps => ps.socket.emit('rtc-recieve', data));
           });
 
           socket.once('disconnect', () => {
@@ -92,7 +87,6 @@ class GameRoom {
         }
       });
     });
-    this.socket.hasListeners
   }
 
   notifyLobbyList() {
@@ -108,7 +102,7 @@ class GameRoom {
   }
 
   notify(ev, data = undefined, group = 'all') {
-    console.log('sending ', ev, ' -> ', group, data);
+    // console.log('sending ', ev, ' -> ', typeof group === 'string' ? group : '...someone...', data);
     if (typeof group === 'string')
       this.socket.to(`${this.uuidv4}-${group}`).emit(ev, data);
     else
@@ -132,18 +126,29 @@ class GameRoom {
 
     this.isStarted = true;
     this.onStart();
+
+    this.players.forEach(p => {
+      p.socket.join(`${this.uuidv4}-all`);
+      p.socket.on('rtc-transmit', ({ to, ...data }) => {
+        this.players
+          .filter(ps => to.includes(ps.username) && ps.username !== p.username)
+          .forEach(ps => ps.socket.emit('rtc-recieve', data));
+      });
+    });
+
     this.notify('game-preparing');
     this.log({ type: 'game-start' });
 
     let turn = -1;
     let roles = [
       config.game.roles.SHERIFF,
-      config.game.roles.DOCTOR,
       config.game.roles.MAFIA,
+      config.game.roles.DOCTOR,
       config.game.roles.CIVILIAN,
       config.game.roles.MAFIA,
       config.game.roles.CIVILIAN
-    ];//.sort(() => Math.random() - .5);
+    ].filter((v, i) => i < this.players.length)
+    .sort(() => Math.random() - .5);
 
     this.players = this.players
       .map((p, i) => ({
@@ -176,19 +181,20 @@ class GameRoom {
 
     this.players.forEach(p => {
       p.socket.once('disconnect', () => p.active = false);
-      p.socket.on('rtc-transmit', ({ to, ...data }) => {
-        this.players.filter(ps => to.includes(ps.username) && ps.username !== tokenData.username).forEach(ps => ps.socket.emit('rtc-recieve', data));
-      });
     });
 
 
     this.notify('game-started');
+    await wait(3000);
 
+    this.notify('game-rtc-link');
     await wait(5000);
 
     const gameStarted = Date.now();
+    this.notify('rtc-rerender');
 
     while (turn++ || !0) {
+      await wait(5000);
       let killed;
       this.log({ type: 'turn-started', i: turn });
 
@@ -211,7 +217,7 @@ class GameRoom {
               this.log({ type: 'vote-mafia', player: p.username, voteFor: v });
               res(v);
             })),
-            wait(10000, (res, rej) => {
+            wait(15000, (res, rej) => {
               p.socket.removeAllListeners('game-vote');
               rej();
             })
@@ -288,7 +294,7 @@ class GameRoom {
 
       for (let p of this.activePlayers) {
         this.notify('game-give-word', p.username);
-        await wait(10 * 1000);
+        await wait(20 * 1000);
       }
 
       if (turn !== 0) {
@@ -303,7 +309,7 @@ class GameRoom {
               this.notify('player-vote', { player: p.username, voteFor: v });
               res(v);
             })),
-            wait(10000, (res, rej) => {
+            wait(15000, (res, rej) => {
               p.socket.removeAllListeners('game-vote');
               rej();
             })
@@ -318,7 +324,7 @@ class GameRoom {
           this.notify('game-killed', killedPlayer.username);
           this.notify('game-give-word', killedPlayer.username);
           this.log({ type: 'day-killed', player: killedPlayer.username });
-          await wait(30000);
+          await wait(20000);
           killedPlayer.active = false;
         }
 
