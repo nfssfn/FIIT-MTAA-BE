@@ -1,6 +1,6 @@
 module.exports = {
   port: 3000,
-  mongoConnectionString: 'mongodb://20.224.137.80:27017/test_mtaa',
+  mongoConnectionString: 'mongodb://2asd',
   jwtAliveTime: '4h',
   game: {
     roles: {
